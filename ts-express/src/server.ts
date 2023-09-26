@@ -1,44 +1,57 @@
-import express from "express"
-import cors from "cors"
-import cookieParser from "cookie-parser"
-
+import express from 'express'
+import cors from 'cors'
+import cookieParser from 'cookie-parser'
 
 const app = express()
 
 app.use(express.json())
-app.use(express.urlencoded({extended:false}))
+app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 
+const ALLOWED_ORIGINS = ['http://localhost:3000', 'http://localhost:3001']
 
-const ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:3001"]
-
-app.use(cors({
+app.use(
+  cors({
     credentials: true,
-    origin:function(origin, callback){
-        if( origin==null || ALLOWED_ORIGINS.indexOf(origin) !==-1){
-            return callback(null, true)
-        }
-        return callback(new Error("Blocked by CORS"))
+    origin: function (origin, callback) {
+      if (origin == null || ALLOWED_ORIGINS.indexOf(origin) !== -1) {
+        return callback(null, true)
+      }
+      return callback(new Error('Blocked by CORS'))
     },
-}))
+  })
+)
 
-app.post("/login", function(req, res, next){
-    console.log("Login requested", req.body, req.originalUrl)
+app.post('/login', function (req, res, next) {
+  console.log('Login requested', req.body, req.originalUrl)
 
-    // encrypt the payload
-    // httpOnly cookie cannot be tampered in frontend
-    res.cookie("COOKIE_KEY", "ENCRYPTED_JWT",{httpOnly:true, maxAge: 7*24*60*60})
+  // encrypt the payload
+  // httpOnly cookie cannot be tampered in frontend
+  res.cookie('COOKIE_KEY', 'ENCRYPTED_JWT', {
+    httpOnly: true,
+    maxAge: 7 * 24 * 60 * 60,
+  })
 
-    return res.status(200).json({
-        success: true
-    })
-
+  return res.status(200).json({
+    success: true,
+  })
 })
 
+app.get('/user', function (req, res, next) {
+  console.log('Cookies', req.cookies)
+
+  // Check the cookie JWT and verify the authentication and return user data
+
+  return res.status(200).json({
+    success: true,
+    user: {
+      id: 1,
+      name: 'Next with Express Auth',
+    },
+  })
+})
 
 const PORT = 3000
-app.listen(PORT, function(){
-    console.log(`Server started at port ${PORT}`)
+app.listen(PORT, function () {
+  console.log(`Server started at port ${PORT}`)
 })
-
-
